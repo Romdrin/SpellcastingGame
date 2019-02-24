@@ -6,10 +6,10 @@ public class PlayerComponent : MonoBehaviour
 {
     public float speed;
     private Animator animator;
+    private SpriteRenderer spriteRenderer;
     private bool CanMove;
     private bool CanAttack;
     public float attackTime = 0.12f;
-    //private Transform transform;
 
     // Start is called before the first frame update
     void Start()
@@ -17,7 +17,7 @@ public class PlayerComponent : MonoBehaviour
         CanMove = true;
         CanAttack = true;
         animator = GetComponent<Animator>();
-        //transform = GetComponent<Transform>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
@@ -27,6 +27,14 @@ public class PlayerComponent : MonoBehaviour
         Vector2 inputDir = input.normalized;
         if (CanMove && input != Vector2.zero)
         {
+            if(inputDir.x < 0)
+            {
+                spriteRenderer.flipX = true;
+            }
+            if (inputDir.x > 0)
+            {
+                spriteRenderer.flipX = false;
+            }
             animator.SetBool("iddle", false);
             animator.SetTrigger("walkAnimation");
             transform.Translate(inputDir * speed * Time.deltaTime, Space.World);
@@ -37,6 +45,7 @@ public class PlayerComponent : MonoBehaviour
         if (CanAttack && Input.GetKey(KeyCode.Mouse0))
         {
             CanMove = false;
+            CanAttack = false;
             StartCoroutine(magicAttack());
         }
     }
@@ -47,12 +56,13 @@ public class PlayerComponent : MonoBehaviour
         animator.SetBool("attacking", true);
         animator.SetBool("iddle", false);
         CanAttack = false;
-
+        
 
         yield return new WaitForSeconds(attackTime);
 
         animator.SetBool("attacking", false);
         animator.SetBool("iddle", true);
+        yield return new WaitForSeconds(0.25f);
         CanAttack = true;
         CanMove = true;
     }
